@@ -45,15 +45,18 @@ jobs:
     name: Install smoke test (pip from GitHub)
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install from GitHub source
+      - name: Install from GitHub source (current commit)
         run: |
           pip install pyyaml python-dotenv
-          pip install git+https://github.com/Le-Xuan-Thang/workflow-kit.git
+          pip install "git+https://github.com/${{ github.repository }}.git@${{ github.event.pull_request.head.sha || github.sha }}"
 
       - name: Verify install
         run: |
