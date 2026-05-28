@@ -80,22 +80,11 @@ Skills are available in Codex sessions as `$workflow-kit:init`, etc.
 <details>
 <summary><strong>OpenCode</strong></summary>
 
-**From a local clone (most reliable):**
-
-```bash
-git clone https://github.com/Le-Xuan-Thang/workflow-kit.git
-opencode plugin /path/to/workflow-kit
-```
-
-This copies all 7 skills to `~/.config/opencode/skills/` automatically.
-
-**From GitHub (requires [bun](https://bun.sh)):**
-
 ```bash
 opencode plugin github:Le-Xuan-Thang/workflow-kit
 ```
 
-> ⚠️ May fail with "git dep preparation failed" on some OpenCode versions. Use the local clone method if it does.
+This copies all 7 skills to `~/.config/opencode/skills/` automatically.
 
 </details>
 

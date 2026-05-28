@@ -142,26 +142,11 @@ Skills callable as `$workflow-kit:init`, `$workflow-kit:execute`, etc.
 
 ### OpenCode
 
-**Option A — from a local clone (recommended until GitHub install is fixed):**
-
 ```bash
-git clone https://github.com/Le-Xuan-Thang/workflow-kit.git
-opencode plugin /path/to/workflow-kit
-```
-
-Skills are copied to `~/.config/opencode/skills/` automatically.
-
-**Option B — directly (requires [bun](https://bun.sh) installed):**
-
-```bash
-# Install bun if not already installed
-curl -fsSL https://bun.sh/install | bash
-
-# Then install plugin (known issue: may fail with "git dep preparation failed")
 opencode plugin github:Le-Xuan-Thang/workflow-kit
 ```
 
-> ⚠️ GitHub-based install has a known issue with some OpenCode versions. Use Option A if it fails.
+Skills are copied to `~/.config/opencode/skills/` automatically.
 
 ### Gemini CLI
 
