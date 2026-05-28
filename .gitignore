@@ -220,3 +220,7 @@ __marimo__/
 # workflow-kit runtime state
 .workflow/
 workflow.yaml
+
+# Node.js
+node_modules/
+*.tgz
