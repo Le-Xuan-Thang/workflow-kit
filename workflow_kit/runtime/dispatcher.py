@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import ast
+import json
 import re
 import subprocess
 import time
@@ -14,6 +15,19 @@ from workflow_kit.runtime.context import WorkflowContext, TaskSpec
 from workflow_kit.runtime.worker import call_llm_with_fallback, parse_file_blocks
 from workflow_kit.runtime import orchestrator as orch_module
 from workflow_kit.runtime.reviewer import call_reviewer
+
+import signal
+
+_shutdown_requested = False
+
+
+def _handle_sigint(sig, frame):
+    global _shutdown_requested
+    _shutdown_requested = True
+    print("\n[dispatcher] Shutdown requested — finishing current task...")
+
+
+signal.signal(signal.SIGINT, _handle_sigint)
 
 
 def _resolve_reviewer_cfg(
@@ -204,6 +218,11 @@ def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
         if (project_root / f).exists()
     }
 
+    # Persist snapshot for crash recovery — deleted when task completes or fails
+    recovery_path = project_root / ".workflow" / "recovery" / f"{task.task_id}.json"
+    recovery_path.parent.mkdir(parents=True, exist_ok=True)
+    recovery_path.write_text(json.dumps(originals, ensure_ascii=False))
+
     prompt = _build_worker_prompt(task, project_root)
     response = call_llm_with_fallback(prompt, cfg.workers)
 
@@ -280,6 +299,8 @@ def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
         ctx.move_task(task.task_id, "active", "completed")
         ctx.write_task(task, "completed")
         ctx.save_current(active_task=None)
+        if recovery_path.exists():
+            recovery_path.unlink()
         print(f"  ⚠️  {task.task_id} ESCALATED — reviewer kept failing")
         return True
 
@@ -304,20 +325,55 @@ def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
     ctx.move_task(task.task_id, "active", "completed")
     ctx.write_task(task, "completed")
     ctx.save_current(active_task=None)
+    if recovery_path.exists():
+        recovery_path.unlink()
     return True
+
+
+def recover_interrupted(project_root: Path):
+    """Detect tasks stuck in active/ from a prior crash. Roll back files and re-queue."""
+    ctx = WorkflowContext(project_root)
+    stuck = sorted(ctx.active.glob("*.json"))
+    if not stuck:
+        return
+    print(f"[dispatcher] Recovering {len(stuck)} interrupted task(s)...")
+    for p in stuck:
+        try:
+            task = TaskSpec.from_dict(json.loads(p.read_text()))
+        except Exception as e:
+            print(f"[dispatcher]   Skipping unreadable task file {p.name}: {e}")
+            continue
+        recovery_path = project_root / ".workflow" / "recovery" / f"{task.task_id}.json"
+        if recovery_path.exists():
+            try:
+                originals = json.loads(recovery_path.read_text())
+                for fpath, content in originals.items():
+                    target = project_root / fpath
+                    if target.exists():
+                        target.write_text(content)
+                recovery_path.unlink()
+                print(f"[dispatcher]   Rolled back files for: {task.task_id}")
+            except Exception as e:
+                print(f"[dispatcher]   Rollback failed for {task.task_id}: {e}")
+        ctx.move_task(task.task_id, "active", "pending")
+        print(f"[dispatcher]   Re-queued for retry: {task.task_id}")
+    ctx.save_current(active_task=None)
 
 
 def watch(cfg: WorkflowConfig, project_root: Path):
     """Main loop: process tasks continuously, respecting work_hours."""
+    recover_interrupted(project_root)
     print("[dispatcher] Watching for tasks in .workflow/tasks/pending/ ...")
     ctx = WorkflowContext(project_root)
     ctx.ensure_dirs()
 
     while True:
+        if _shutdown_requested:
+            print("[dispatcher] Stopped cleanly.")
+            break
         if not _is_work_hours(cfg.settings.work_hours):
             print("[dispatcher] Outside work hours — sleeping 30 min")
             time.sleep(1800)
             continue
-
         if not run_one_cycle(cfg, project_root):
             time.sleep(5)
