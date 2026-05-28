@@ -54,6 +54,81 @@ The skills are now available: `/workflow-kit:init`, `/workflow-kit:plan`, etc.
 
 ---
 
+### Installing on other platforms
+
+<details>
+<summary><strong>Codex CLI</strong></summary>
+
+```bash
+# Step 1: add the marketplace
+codex plugin marketplace add Le-Xuan-Thang/workflow-kit
+
+# Step 2: install the plugin
+codex plugin add workflow-kit@Le-Xuan-Thang
+```
+
+Verify:
+```
+codex plugin list
+# workflow-kit@Le-Xuan-Thang  installed, enabled  0.2.0
+```
+
+Skills are available in Codex sessions as `$workflow-kit:init`, etc.
+
+</details>
+
+<details>
+<summary><strong>OpenCode</strong></summary>
+
+**From a local clone (most reliable):**
+
+```bash
+git clone https://github.com/Le-Xuan-Thang/workflow-kit.git
+opencode plugin /path/to/workflow-kit
+```
+
+This copies all 7 skills to `~/.config/opencode/skills/` automatically.
+
+**From GitHub (requires [bun](https://bun.sh)):**
+
+```bash
+opencode plugin github:Le-Xuan-Thang/workflow-kit
+```
+
+> ⚠️ May fail with "git dep preparation failed" on some OpenCode versions. Use the local clone method if it does.
+
+</details>
+
+<details>
+<summary><strong>Gemini CLI</strong></summary>
+
+Add to `~/.gemini/config.yaml`:
+
+```yaml
+plugins:
+  - source: github:Le-Xuan-Thang/workflow-kit
+    name: workflow-kit
+```
+
+> Note: Not tested on this machine. Command format may vary by Gemini CLI version.
+
+</details>
+
+<details>
+<summary><strong>Standalone CLI (no AI tool)</strong></summary>
+
+```bash
+git clone https://github.com/Le-Xuan-Thang/workflow-kit.git
+cd workflow-kit
+pip install pyyaml python-dotenv
+pip install -e .
+python -m workflow_kit --help
+```
+
+</details>
+
+---
+
 ## Part 2: Initialize a project
 
 Navigate to your project directory:
