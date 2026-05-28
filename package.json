@@ -10,8 +10,8 @@
     "skills/"
   ],
   "scripts": {
-    "postinstall": "node postinstall.js",
-    "test": "node tests/test-plugin.mjs"
+    "test": "node tests/test-plugin.mjs",
+    "copy-skills": "node postinstall.js"
   },
   "author": {
     "name": "Le Xuan Thang",
