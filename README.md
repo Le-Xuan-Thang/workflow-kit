@@ -1,5 +1,7 @@
 # workflow-kit
 
+[![CI](https://github.com/Le-Xuan-Thang/workflow-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/Le-Xuan-Thang/workflow-kit/actions/workflows/ci.yml)
+
 A **full product lifecycle plugin** for Claude Code, Codex CLI, OpenCode, and Gemini CLI.
 
 Define your product's Vision, Mission, and Core → generate a structured workplan → execute with mandatory domain-expert reviewer agents → synthesize deliverables → maintain.
