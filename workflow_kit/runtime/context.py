@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import threading
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -42,6 +43,8 @@ class WorkflowContext:
         self.active = self.wf / "tasks" / "active"
         self.completed = self.wf / "tasks" / "completed"
         self.memory = self.wf / "memory"
+        self._lock = threading.Lock()
+        self._active_files: set[str] = set()
 
     def ensure_dirs(self):
         for d in [self.pending, self.active, self.completed, self.memory]:
@@ -71,6 +74,29 @@ class WorkflowContext:
         if not tasks:
             return None
         return TaskSpec.from_dict(json.loads(tasks[0].read_text()))
+
+    def get_next_pending_safe(self, excluded_files: set[str]) -> Optional["TaskSpec"]:
+        """Thread-safe: pick next pending task that doesn't conflict with active files."""
+        with self._lock:
+            for p in sorted(self.pending.glob("*.json")):
+                task = TaskSpec.from_dict(json.loads(p.read_text()))
+                if not set(task.files_to_modify) & excluded_files:
+                    return task
+            return None
+
+    def register_active_files(self, files: list[str]):
+        """Mark files as in-use by an active task."""
+        with self._lock:
+            self._active_files.update(files)
+
+    def unregister_active_files(self, files: list[str]):
+        """Release files after task completes."""
+        with self._lock:
+            self._active_files -= set(files)
+
+    def get_active_files(self) -> set[str]:
+        with self._lock:
+            return set(self._active_files)
 
     def pending_count(self) -> int:
         return len(list(self.pending.glob("*.json")))
