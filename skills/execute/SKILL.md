@@ -9,6 +9,17 @@ allowed-tools: Read, Bash
 
 Start the dispatcher. For every task: worker builds → reviewer validates → PASS marks done, FAIL retries, max retries exceeded escalates to user.
 
+## Reviewer gate
+
+After each worker output passes syntax verification:
+1. If `reviewers:` is configured in `workflow.yaml` (or per-task `reviewer:` field in the task JSON), a reviewer agent is called with a domain-appropriate system prompt
+2. Domain is auto-detected from task description: `code-reviewer`, `editor`, `researcher`, `designer`, `data-scientist`, or `devops`
+3. Reviewer responds with PASS or FAIL on the first line, followed by specific feedback
+4. On FAIL: feedback is appended to the retry prompt — worker tries again (up to `max_retries`)
+5. After `max_retries` FAILs: task is escalated — user sees reviewer's final feedback and chooses: skip / retry with guidance / redesign
+6. On PASS (or no reviewer configured): task is marked completed and committed
+7. If reviewer LLM is unreachable: treated as PASS to avoid blocking the pipeline
+
 ## Step 1: Check prerequisites
 
 ```bash

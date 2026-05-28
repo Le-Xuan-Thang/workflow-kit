@@ -152,6 +152,27 @@ Ask:
 - Run Path A for worker
 - For orchestrator: get OpenRouter key → verify DeepSeek free tier
 
+## Phase 7b: Reviewer LLM setup
+
+Ask:
+> "Do you want to configure a **reviewer LLM** — a separate model that validates each worker output before marking tasks complete? This eliminates sycophancy bias when the same model reviews its own work.
+> A) Yes — use a cloud API (Claude/OpenAI/OpenRouter) as reviewer, local model as worker (recommended)
+> B) Yes — use the same endpoint as worker (simpler, still adds review step)
+> C) No — skip reviewer (worker output accepted after syntax check only)"
+
+**Path A or B:** Add `reviewers:` section to `workflow.yaml`:
+
+```yaml
+reviewers:
+  - endpoint: "<chosen endpoint>"
+    api_key: "<key or ${VAR}>"
+    model: "<model name>"
+```
+
+**Path C:** Skip — no `reviewers:` key in workflow.yaml. Task auto-passes after syntax check.
+
+Per-task override: any task JSON in `workflow/tasks/pending/` can include a `"reviewer": {"endpoint":…, "api_key":…, "model":…}` field to use a different reviewer for that specific task.
+
 ## Phase 8: Write workflow.yaml
 
 ```yaml

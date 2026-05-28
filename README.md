@@ -279,10 +279,11 @@ worker:
   api_key: "ollama"
   model: "llama3.1:70b"
 
+# Optional: cross-provider reviewer (recommended — eliminates sycophancy bias)
 reviewers:
-  default_endpoint: "http://localhost:11434/v1/chat/completions"
-  default_api_key: "ollama"
-  default_model: "llama3.1:70b"
+  - endpoint: "https://api.anthropic.com/v1/messages"
+    api_key: "${ANTHROPIC_API_KEY}"
+    model: "claude-haiku-4-5-20251001"
 
 settings:
   work_hours: "9-21"
@@ -321,6 +322,7 @@ orchestrators:
 | `verify_syntax` | `true` | Syntax check before accepting worker output |
 | `max_retries` | `2` | Reviewer FAIL retries before escalating to user |
 | `dashboard_port` | `7860` | Web dashboard port |
+| `reviewer` | — | Per-task field in task JSON to override the global reviewer config |
 
 ---
 
