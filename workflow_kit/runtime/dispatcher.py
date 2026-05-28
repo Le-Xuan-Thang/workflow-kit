@@ -7,7 +7,7 @@ import re
 import subprocess
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -205,6 +205,9 @@ def _execute_task(task: TaskSpec, cfg: WorkflowConfig, project_root: Path):
 
     ctx.save_current(active_task=task.task_id, last_command=f"Execute: {task.feature_name}")
 
+    started_at = datetime.now(timezone.utc).isoformat()
+    start_time = time.time()
+
     # Save originals for rollback
     originals = {
         f: (project_root / f).read_text()
@@ -223,6 +226,8 @@ def _execute_task(task: TaskSpec, cfg: WorkflowConfig, project_root: Path):
     # Retry loop: worker → syntax check → reviewer → retry with combined feedback
     retry = 0
     all_errors: list[str] = []
+    review = None
+    reviewer_cfg = None
 
     if response:
         file_blocks = parse_file_blocks(response)
@@ -296,6 +301,20 @@ def _execute_task(task: TaskSpec, cfg: WorkflowConfig, project_root: Path):
         if recovery_path.exists():
             recovery_path.unlink()
         print(f"  ⚠️  {task.task_id} ESCALATED — reviewer kept failing")
+        from workflow_kit.runtime.metrics import record_metric, TaskMetrics
+        record_metric(TaskMetrics(
+            task_id=task.task_id,
+            feature_name=task.feature_name,
+            status="escalated",
+            started_at=started_at,
+            completed_at=datetime.now(timezone.utc).isoformat(),
+            duration_seconds=round(time.time() - start_time, 2),
+            worker_model=cfg.workers[0].model,
+            retry_count=retry,
+            reviewer_model=reviewer_cfg.model if reviewer_cfg else None,
+            reviewer_domain=review.domain if review else None,
+            reviewer_passed=review.passed if review else None,
+        ), project_root)
         return
 
     if not all_errors:
@@ -321,6 +340,20 @@ def _execute_task(task: TaskSpec, cfg: WorkflowConfig, project_root: Path):
     ctx.save_current(active_task=None)
     if recovery_path.exists():
         recovery_path.unlink()
+    from workflow_kit.runtime.metrics import record_metric, TaskMetrics
+    record_metric(TaskMetrics(
+        task_id=task.task_id,
+        feature_name=task.feature_name,
+        status=task.status,
+        started_at=started_at,
+        completed_at=datetime.now(timezone.utc).isoformat(),
+        duration_seconds=round(time.time() - start_time, 2),
+        worker_model=cfg.workers[0].model,
+        retry_count=retry,
+        reviewer_model=reviewer_cfg.model if reviewer_cfg else None,
+        reviewer_domain=review.domain if review else None,
+        reviewer_passed=review.passed if review else None,
+    ), project_root)
 
 
 def _run_task_safe(task: TaskSpec, cfg: WorkflowConfig, project_root: Path, ctx: WorkflowContext):

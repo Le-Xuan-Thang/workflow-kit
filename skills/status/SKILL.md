@@ -38,3 +38,31 @@ If no `workflow/` directory: "workflow-kit not initialized. Run /workflow-kit:in
 If dispatcher stopped with pending tasks: append "Run /workflow-kit:execute to resume."
 
 If phase is `synthesize` and all tasks done: append "Run /workflow-kit:synthesize to package deliverables."
+
+## Metrics Summary
+
+Load and display recent task metrics:
+
+```python
+from workflow_kit.runtime.metrics import load_metrics, summarize
+from pathlib import Path
+
+metrics = load_metrics(Path("."), limit=50)
+stats = summarize(metrics)
+if stats:
+    print(f"""
+┌─────────────────────────────────────────┐
+│           Task Metrics (last 50)        │
+├─────────────────────────────────────────┤
+│ Total tasks:      {stats['total']:>4}                  │
+│ Completed:        {stats['completed']:>4}  ({stats['pass_rate']}%)          │
+│ Failed:           {stats['failed']:>4}                  │
+│ Escalated:        {stats['escalated']:>4}                  │
+│ Avg duration:     {stats['avg_duration_seconds']:>6.1f}s               │
+│ Avg retries:      {stats['avg_retries']:>6.2f}               │""")
+    if stats['reviewer_pass_rate'] is not None:
+        print(f"│ Reviewer pass:    {stats['reviewer_pass_rate']:>5.1f}%               │")
+    print("└─────────────────────────────────────────┘")
+else:
+    print("No metrics recorded yet. Run /workflow-kit:execute to start.")
+```
