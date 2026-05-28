@@ -1,21 +1,13 @@
 {
   "name": "workflow-kit",
-  "description": "Portable multi-agent development loop: DeepSeek orchestrates, local LLM executes, dispatcher closes the loop automatically.",
-  "version": "0.1.0",
+  "description": "Full product lifecycle plugin: define Vision/Mission/Core → generate workplan → execute with reviewer agents → synthesize deliverables → maintain.",
+  "version": "0.2.0",
   "author": {
     "name": "Le Xuan Thang",
     "email": "lexuanthang.stock@gmail.com"
   },
-  "homepage": "https://github.com/thanglexuan/workflow-kit",
-  "repository": "https://github.com/thanglexuan/workflow-kit",
+  "homepage": "https://github.com/Le-Xuan-Thang/workflow-kit",
+  "repository": "https://github.com/Le-Xuan-Thang/workflow-kit",
   "license": "MIT",
-  "keywords": [
-    "multi-agent",
-    "automation",
-    "workflow",
-    "orchestration",
-    "llm",
-    "dispatcher"
-  ],
-  "skills": "../skills/"
+  "keywords": ["multi-agent", "product-lifecycle", "automation", "workflow", "dispatcher", "reviewer"]
 }
