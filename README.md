@@ -35,6 +35,69 @@ State tracked in `workflow/state.yaml`. Each phase requires user approval to adv
 
 ---
 
+## New in v0.3: Tier 1 Features
+
+### Cross-provider reviewer
+
+Use a different LLM provider for reviews than for worker tasks — eliminates sycophancy bias when a model reviews its own output.
+
+```yaml
+# workflow.yaml
+reviewers:
+  - endpoint: "https://api.anthropic.com/v1/messages"
+    api_key: "${ANTHROPIC_API_KEY}"
+    model: "claude-haiku-4-5-20251001"
+```
+
+Per-task override: add a `"reviewer"` field to any task JSON in `workflow/tasks/pending/<id>.json` to use a different reviewer for that specific task:
+
+```json
+{
+  "task_id": "feat-007",
+  "reviewer": {
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "api_key": "${OPENAI_API_KEY}",
+    "model": "gpt-4o"
+  }
+}
+```
+
+### Checkpoint & Resume
+
+If the dispatcher crashes mid-task (power loss, OOM, Ctrl+C), workflow-kit recovers automatically on next startup. File snapshots are written before each task begins and deleted when the task completes.
+
+```bash
+# Auto-detected on every startup. If dispatcher crashed mid-task:
+python -m workflow_kit start              # automatically recovers + retries interrupted task
+python -m workflow_kit start --resume     # same, explicit flag for clarity
+```
+
+### Parallel execution
+
+Run multiple tasks concurrently. Tasks that share files are never run in parallel — conflict detection is automatic.
+
+```yaml
+# workflow.yaml
+settings:
+  max_parallel_tasks: 3  # run up to 3 tasks concurrently (default: 1)
+```
+
+### AgentOps metrics
+
+Every completed task records timing, retry count, and reviewer pass/fail to `.workflow/metrics.jsonl`. View the dashboard via:
+
+```
+/workflow-kit:status   →  shows metrics dashboard
+```
+
+Or from CLI:
+
+```bash
+python -m workflow_kit status
+```
+
+---
+
 ## Skills
 
 | Skill | Phase | What it does |
@@ -322,7 +385,8 @@ orchestrators:
 | `verify_syntax` | `true` | Syntax check before accepting worker output |
 | `max_retries` | `2` | Reviewer FAIL retries before escalating to user |
 | `dashboard_port` | `7860` | Web dashboard port |
-| `reviewer` | — | Per-task field in task JSON to override the global reviewer config |
+| `max_parallel_tasks` | `1` | Number of tasks to run concurrently. Tasks sharing `files_to_modify` are never run in parallel. |
+| `reviewer` | — | Per-task field in task JSON to override the global reviewer config. |
 
 ---
 
