@@ -1,0 +1,20 @@
+skill: bug_fix
+challenges:
+  - id: fix_off_by_one
+    prompt: |
+      Fix the bug in this function. It should return the last element of the list, but it crashes. Return the corrected function only.
+
+      def get_last(items):
+          return items[len(items)]
+    required_patterns: ["def get_last", "return items[", "-1"]
+    must_compile: true
+    score: 1.0
+  - id: fix_wrong_operator
+    prompt: |
+      Fix the bug: this function should return True if x is greater than 0, but it always returns False. Return the corrected function only.
+
+      def is_positive(x):
+          return x < 0
+    required_patterns: ["def is_positive", "return x >", "> 0"]
+    must_compile: true
+    score: 1.0

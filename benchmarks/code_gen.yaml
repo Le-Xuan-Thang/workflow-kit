@@ -1,0 +1,12 @@
+skill: code_gen
+challenges:
+  - id: gen_add_function
+    prompt: "Write a Python function named `add` that takes two numbers a and b and returns their sum. Output only the function."
+    required_patterns: ["def add", "return", "a", "b"]
+    must_compile: true
+    score: 1.0
+  - id: gen_filter_list
+    prompt: "Write a Python function named `filter_even` that takes a list of integers and returns only the even ones. Use a list comprehension."
+    required_patterns: ["def filter_even", "return", "% 2"]
+    must_compile: true
+    score: 1.0

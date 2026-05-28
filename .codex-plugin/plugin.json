@@ -1,0 +1,34 @@
+{
+  "name": "workflow-kit",
+  "description": "Portable multi-agent development loop: DeepSeek orchestrates, local LLM executes, dispatcher closes the loop automatically.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Le Xuan Thang",
+    "email": "lexuanthang.stock@gmail.com"
+  },
+  "homepage": "https://github.com/thanglexuan/workflow-kit",
+  "repository": "https://github.com/thanglexuan/workflow-kit",
+  "license": "MIT",
+  "keywords": [
+    "multi-agent",
+    "automation",
+    "workflow",
+    "orchestration",
+    "llm",
+    "dispatcher"
+  ],
+  "skills": "../skills/",
+  "interface": {
+    "displayName": "Workflow Kit",
+    "shortDescription": "Automated multi-agent dev loop for any project",
+    "longDescription": "Drop into any project: DeepSeek plans tasks from goals.md, a local Ollama worker executes them, the dispatcher loops automatically. Monitor via TUI or web dashboard.",
+    "developerName": "Le Xuan Thang",
+    "category": "Coding",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": [
+      "Set up workflow-kit for this project.",
+      "Plan the next set of tasks from goals.md."
+    ],
+    "brandColor": "#6366F1"
+  }
+}

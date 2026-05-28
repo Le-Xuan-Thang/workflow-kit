@@ -1,0 +1,12 @@
+skill: frontend_js
+challenges:
+  - id: gen_fetch_function
+    prompt: "Write a JavaScript function named `fetchData` that takes a `url` string, calls fetch(url), parses the JSON response, and returns the result. Use async/await."
+    required_patterns: ["async function fetchData", "await fetch", "await", ".json()"]
+    must_compile: false
+    score: 1.0
+  - id: gen_toggle_class
+    prompt: "Write a JavaScript function named `toggleDarkMode` that toggles the CSS class 'dark-mode' on document.body."
+    required_patterns: ["function toggleDarkMode", "document.body", "classList", "toggle"]
+    must_compile: false
+    score: 1.0

@@ -1,0 +1,20 @@
+skill: code_edit
+challenges:
+  - id: add_parameter
+    prompt: |
+      Add a `timeout` parameter with default value 30 to this existing function. Return the complete modified function only.
+
+      def fetch_data(url):
+          return requests.get(url).json()
+    required_patterns: ["def fetch_data", "timeout", "= 30"]
+    must_compile: true
+    score: 1.0
+  - id: add_return_type
+    prompt: |
+      Add a return type annotation `-> list[str]` to this function. Return the complete modified function only.
+
+      def get_names(data):
+          return [item["name"] for item in data]
+    required_patterns: ["def get_names", "-> list"]
+    must_compile: true
+    score: 1.0

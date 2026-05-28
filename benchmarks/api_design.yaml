@@ -1,0 +1,12 @@
+skill: api_design
+challenges:
+  - id: gen_fastapi_route
+    prompt: "Write a FastAPI route: GET /api/status that returns a JSON response with keys 'status' (value: 'running') and 'version' (value: '1.0'). Use @app.get decorator. Import nothing — assume app is already defined."
+    required_patterns: ["@app.get", "/api/status", "return", "status", "running"]
+    must_compile: true
+    score: 1.0
+  - id: gen_pydantic_model
+    prompt: "Write a Pydantic BaseModel class named `DetectionResult` with fields: `image_id` (str), `confidence` (float), `label` (str), `bbox` (list[float])."
+    required_patterns: ["class DetectionResult", "BaseModel", "image_id", "confidence", "label", "bbox"]
+    must_compile: true
+    score: 1.0

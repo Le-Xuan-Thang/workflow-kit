@@ -1,0 +1,12 @@
+skill: css_styling
+challenges:
+  - id: gen_button_styles
+    prompt: "Write CSS for a class named `.btn-primary` with: background color #2563eb, white text, 8px vertical padding, 16px horizontal padding, border-radius 4px, no border, pointer cursor."
+    required_patterns: [".btn-primary", "background", "#2563eb", "color", "padding", "border-radius", "cursor: pointer"]
+    must_compile: false
+    score: 1.0
+  - id: gen_dark_mode_vars
+    prompt: "Write CSS custom properties (variables) for dark mode inside a `.dark-mode` class selector: --bg-color should be #1a1a2e, --text-color should be #e0e0e0."
+    required_patterns: [".dark-mode", "--bg-color", "#1a1a2e", "--text-color", "#e0e0e0"]
+    must_compile: false
+    score: 1.0

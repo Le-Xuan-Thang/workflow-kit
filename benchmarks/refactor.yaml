@@ -1,0 +1,22 @@
+skill: refactor
+challenges:
+  - id: extract_function
+    prompt: |
+      Extract the repeated logic into a helper function named `clamp` that takes value, min_val, max_val and returns the clamped value. Then rewrite the two lines below using it.
+
+      x = max(0, min(100, raw_x))
+      y = max(0, min(100, raw_y))
+    required_patterns: ["def clamp", "return", "clamp(", "raw_x", "raw_y"]
+    must_compile: true
+    score: 1.0
+  - id: rename_variable
+    prompt: |
+      Rename the variable `d` to `detection` throughout this function. Return the complete modified function.
+
+      def process(d):
+          if d is None:
+              return None
+          return d["label"]
+    required_patterns: ["def process", "detection", "return detection"]
+    must_compile: true
+    score: 1.0
