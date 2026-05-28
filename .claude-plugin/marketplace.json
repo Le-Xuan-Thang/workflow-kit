@@ -1,0 +1,26 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "Le-Xuan-Thang",
+  "description": "Le Xuan Thang's Claude Code plugins — full product lifecycle tooling for multi-agent dev workflows",
+  "owner": {
+    "name": "Le Xuan Thang",
+    "email": "lexuanthang.stock@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "workflow-kit",
+      "description": "Full product lifecycle plugin: define Vision/Mission/Core → generate workplan → execute with reviewer agents → synthesize deliverables → maintain.",
+      "author": {
+        "name": "Le Xuan Thang",
+        "email": "lexuanthang.stock@gmail.com"
+      },
+      "category": "productivity",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/Le-Xuan-Thang/workflow-kit.git",
+        "sha": "232fb509d50e29b9fba352fe57b5a4fdda32cd0d"
+      },
+      "homepage": "https://github.com/Le-Xuan-Thang/workflow-kit"
+    }
+  ]
+}

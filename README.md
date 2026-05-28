@@ -54,7 +54,11 @@ State tracked in `workflow/state.yaml`. Each phase requires user approval to adv
 ### Claude Code
 
 ```bash
-claude plugin install github:Le-Xuan-Thang/workflow-kit
+# Step 1: add the marketplace (one time only)
+claude plugin marketplace add Le-Xuan-Thang/workflow-kit
+
+# Step 2: install the plugin
+claude plugin install workflow-kit
 ```
 
 Restart Claude Code. Skills available as `/workflow-kit:init`, `/workflow-kit:plan`, etc.
