@@ -6,6 +6,7 @@ import json
 import re
 import subprocess
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -194,21 +195,14 @@ def git_commit(message: str, files: list[str], project_root: Path):
     )
 
 
-def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
-    """Pick one pending task, execute it, call orchestrator for next task.
-
-    Returns True if a task was processed, False if queue was empty.
-    """
+def _execute_task(task: TaskSpec, cfg: WorkflowConfig, project_root: Path):
+    """Execute one task: worker → syntax check → reviewer → commit. Thread-safe."""
     ctx = WorkflowContext(project_root)
-    task = ctx.get_next_pending()
-    if task is None:
-        return False
 
     print(f"\n{'=' * 50}")
     print(f"Executing: {task.feature_name} ({task.task_id})")
     print(f"{'=' * 50}")
 
-    ctx.move_task(task.task_id, "pending", "active")
     ctx.save_current(active_task=task.task_id, last_command=f"Execute: {task.feature_name}")
 
     # Save originals for rollback
@@ -302,7 +296,7 @@ def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
         if recovery_path.exists():
             recovery_path.unlink()
         print(f"  ⚠️  {task.task_id} ESCALATED — reviewer kept failing")
-        return True
+        return
 
     if not all_errors:
         task.status = "completed"
@@ -327,6 +321,28 @@ def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
     ctx.save_current(active_task=None)
     if recovery_path.exists():
         recovery_path.unlink()
+
+
+def _run_task_safe(task: TaskSpec, cfg: WorkflowConfig, project_root: Path, ctx: WorkflowContext):
+    """Run a single task in a thread, unregistering files when done."""
+    try:
+        _execute_task(task, cfg, project_root)
+    finally:
+        ctx.unregister_active_files(task.files_to_modify)
+
+
+def run_one_cycle(cfg: WorkflowConfig, project_root: Path) -> bool:
+    """Pick one pending task, execute it, call orchestrator for next task.
+
+    Returns True if a task was processed, False if queue was empty.
+    """
+    ctx = WorkflowContext(project_root)
+    task = ctx.get_next_pending()
+    if task is None:
+        return False
+    ctx.move_task(task.task_id, "pending", "active")
+    ctx.save_current(active_task=task.task_id, last_command=f"Execute: {task.feature_name}")
+    _execute_task(task, cfg, project_root)
     return True
 
 
@@ -361,19 +377,47 @@ def recover_interrupted(project_root: Path):
 
 
 def watch(cfg: WorkflowConfig, project_root: Path):
-    """Main loop: process tasks continuously, respecting work_hours."""
+    """Main loop: process tasks in parallel up to max_parallel_tasks."""
     recover_interrupted(project_root)
-    print("[dispatcher] Watching for tasks in .workflow/tasks/pending/ ...")
+    print(f"[dispatcher] Watching (max_parallel_tasks={cfg.settings.max_parallel_tasks}) ...")
     ctx = WorkflowContext(project_root)
     ctx.ensure_dirs()
 
-    while True:
-        if _shutdown_requested:
-            print("[dispatcher] Stopped cleanly.")
-            break
-        if not _is_work_hours(cfg.settings.work_hours):
-            print("[dispatcher] Outside work hours — sleeping 30 min")
-            time.sleep(1800)
-            continue
-        if not run_one_cycle(cfg, project_root):
-            time.sleep(5)
+    with ThreadPoolExecutor(max_workers=cfg.settings.max_parallel_tasks) as pool:
+        futures: dict = {}  # future -> task_id
+
+        while True:
+            if _shutdown_requested:
+                print("[dispatcher] Shutdown requested — waiting for active tasks...")
+                for f in list(futures):
+                    f.result()  # wait for in-flight tasks
+                print("[dispatcher] Stopped cleanly.")
+                break
+
+            if not _is_work_hours(cfg.settings.work_hours):
+                print("[dispatcher] Outside work hours — sleeping 30 min")
+                time.sleep(1800)
+                continue
+
+            # Clean up completed futures
+            done = [f for f in futures if f.done()]
+            for f in done:
+                del futures[f]
+
+            # Submit new tasks if we have capacity
+            while len(futures) < cfg.settings.max_parallel_tasks:
+                active_files = ctx.get_active_files()
+                task = ctx.get_next_pending_safe(active_files)
+                if task is None:
+                    break
+                ctx.move_task(task.task_id, "pending", "active")
+                ctx.register_active_files(task.files_to_modify)
+                future = pool.submit(_run_task_safe, task, cfg, project_root, ctx)
+                futures[future] = task.task_id
+
+            if not futures and not ctx.pending_count():
+                time.sleep(5)
+            elif futures:
+                time.sleep(1)
+            else:
+                time.sleep(5)
