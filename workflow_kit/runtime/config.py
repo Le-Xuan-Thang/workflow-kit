@@ -41,6 +41,7 @@ class Settings:
     verify_syntax: bool = True
     max_retries: int = 2
     dashboard_port: int = 7860
+    max_parallel_tasks: int = 1  # default 1 = backward compatible
 
 
 @dataclass
@@ -164,6 +165,7 @@ def load_config(project_root: Path) -> WorkflowConfig:
             verify_syntax=bool(s.get("verify_syntax", True)),
             max_retries=int(s.get("max_retries", 2)),
             dashboard_port=int(s.get("dashboard_port", 7860)),
+            max_parallel_tasks=int(s.get("max_parallel_tasks", 1)),
         ),
         root=project_root.resolve(),
     )
