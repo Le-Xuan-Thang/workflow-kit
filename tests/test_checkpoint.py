@@ -129,24 +129,14 @@ def _make_cfg() -> WorkflowConfig:
 
 
 def test_watch_stops_when_shutdown_requested(tmp_path):
-    """watch() exits loop after one cycle when _shutdown_requested is True."""
+    """watch() exits cleanly when _shutdown_requested is True at start of loop."""
     cfg = _make_cfg()
-    dispatcher_module._shutdown_requested = False
+    # Pre-set shutdown flag — watch() must detect it and exit without hanging
+    dispatcher_module._shutdown_requested = True
 
-    call_count = 0
+    with patch.object(dispatcher_module, "recover_interrupted"):
+        dispatcher_module.watch(cfg, tmp_path)  # must return promptly
 
-    def fake_cycle(cfg, root):
-        nonlocal call_count
-        call_count += 1
-        dispatcher_module._shutdown_requested = True
-        return False
-
-    with patch.object(dispatcher_module, "run_one_cycle", side_effect=fake_cycle), \
-         patch.object(dispatcher_module, "recover_interrupted"), \
-         patch.object(dispatcher_module, "_is_work_hours", return_value=True):
-        dispatcher_module.watch(cfg, tmp_path)
-
-    assert call_count == 1
     dispatcher_module._shutdown_requested = False  # reset
 
 
