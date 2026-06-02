@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" rx="12" fill="#6366F1"/>
+  <!-- Node: Define -->
+  <rect x="8" y="10" width="18" height="10" rx="3" fill="#fff" opacity="0.9"/>
+  <!-- Node: Plan -->
+  <rect x="23" y="27" width="18" height="10" rx="3" fill="#fff" opacity="0.9"/>
+  <!-- Node: Ship -->
+  <rect x="38" y="44" width="18" height="10" rx="3" fill="#fff" opacity="0.9"/>
+  <!-- Arrows -->
+  <line x1="17" y1="20" x2="28" y2="27" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <line x1="32" y1="37" x2="43" y2="44" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+</svg>

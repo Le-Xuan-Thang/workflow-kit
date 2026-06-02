@@ -7,6 +7,7 @@
   "repository": "https://github.com/Le-Xuan-Thang/workflow-kit",
   "license": "MIT",
   "keywords": ["multi-agent", "product-lifecycle", "automation", "workflow"],
+  "composerIcon": "./assets/icon.svg",
   "interface": {
     "displayName": "Workflow Kit",
     "shortDescription": "Full product lifecycle: Vision → Plan → Build → Ship → Maintain",
